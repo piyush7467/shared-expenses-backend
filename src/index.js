@@ -41,6 +41,15 @@ app.use('/api/import', importRoutes);
 app.use('/api/personal-transactions', personalTransactionRoutes);
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
+// Default root route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to the MoneyMap API!',
+    status: 'Online',
+    healthCheck: '/health'
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date() });
