@@ -25,7 +25,10 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins for development and ease of testing
+  origin: (origin, callback) => {
+    // Allow all origins dynamically (echoing back the requesting origin) to support credentials: true
+    callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -105,7 +108,6 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
-      console.log(`API documentation route: http://localhost:${PORT}/health`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
