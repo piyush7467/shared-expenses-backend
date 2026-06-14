@@ -42,7 +42,7 @@ app.use('/api/settlements', settlementRoutes);
 app.use('/api/settlement-suggestions', suggestionsRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/personal-transactions', personalTransactionRoutes);
-app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use('/api/public', express.static(path.join(__dirname, '../public')));
 
 // Default root route
 app.get('/', (req, res) => {

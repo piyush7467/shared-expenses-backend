@@ -32,22 +32,24 @@ const detectManualAnomalies = async (expenseData, splits) => {
 
   // 2. Date checks relative to joined/left memberships
   const memberships = await prisma.membership.findMany({
-    where: { groupId }
+    where: { groupId },
+    include: { user: true }
   });
 
   // Check payer membership constraints
   const payerMember = memberships.find(m => m.userId === payerId);
   if (payerMember) {
+    const payerName = payerMember.user?.name || 'payer';
     if (expDate < new Date(payerMember.joinedAt)) {
       anomalies.push({
         type: 'EXPENSE_BEFORE_JOINED',
-        description: `Expense date (${expDate.toLocaleDateString()}) is before the payer joined the group (${new Date(payerMember.joinedAt).toLocaleDateString()}).`
+        description: `Expense date (${expDate.toLocaleDateString()}) is before payer '${payerName}' joined the group (${new Date(payerMember.joinedAt).toLocaleDateString()}).`
       });
     }
     if (payerMember.leftAt && expDate > new Date(payerMember.leftAt)) {
       anomalies.push({
         type: 'EXPENSE_AFTER_LEFT',
-        description: `Expense date (${expDate.toLocaleDateString()}) is after the payer left the group (${new Date(payerMember.leftAt).toLocaleDateString()}).`
+        description: `Expense date (${expDate.toLocaleDateString()}) is after payer '${payerName}' left the group (${new Date(payerMember.leftAt).toLocaleDateString()}).`
       });
     }
   }
@@ -56,16 +58,17 @@ const detectManualAnomalies = async (expenseData, splits) => {
   for (const split of splits) {
     const partMember = memberships.find(m => m.userId === split.userId);
     if (partMember) {
+      const participantName = partMember.user?.name || `user ${split.userId}`;
       if (expDate < new Date(partMember.joinedAt)) {
         anomalies.push({
           type: 'EXPENSE_BEFORE_JOINED',
-          description: `Expense date is before participant user ${split.userId} joined the group.`
+          description: `Expense date is before participant '${participantName}' joined the group.`
         });
       }
       if (partMember.leftAt && expDate > new Date(partMember.leftAt)) {
         anomalies.push({
           type: 'EXPENSE_AFTER_LEFT',
-          description: `Expense date is after participant user ${split.userId} left the group.`
+          description: `Expense date is after participant '${participantName}' left the group.`
         });
       }
     }
